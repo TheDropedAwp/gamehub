@@ -6,6 +6,6 @@ jinja2
 python-multipart
 python-jose[cryptography]
 passlib[bcrypt]
-bcrypt
+bcrypt==4.0.1
 redis
 psycopg2-binary

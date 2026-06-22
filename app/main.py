@@ -71,9 +71,19 @@ def seed_on_startup():
     if not settings.AUTO_SEED_ON_STARTUP:
         return
 
+    if not settings.ADMIN_PASSWORD or not settings.MODERATOR_PASSWORD:
+        print(
+            "AUTO_SEED_ON_STARTUP is enabled, but ADMIN_PASSWORD or "
+            "MODERATOR_PASSWORD is not set. Skipping seed."
+        )
+        return
+
     from app.seed import run_seed
 
-    run_seed()
+    try:
+        run_seed()
+    except Exception as error:
+        print(f"Startup seed failed: {error}")
 
 class UnityStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope):

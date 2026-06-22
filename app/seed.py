@@ -29,9 +29,14 @@ def get_or_create_user(
     password: str,
     role: UserRole,
 ):
-    user = db.query(User).filter(User.email == email).first()
+    user = (
+        db.query(User)
+        .filter((User.email == email) | (User.username == username))
+        .first()
+    )
 
     if user:
+        user.email = email
         user.username = username
         user.hashed_password = hash_password(password)
         user.role = role
