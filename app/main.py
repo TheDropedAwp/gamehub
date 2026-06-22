@@ -114,6 +114,9 @@ class UnityStaticFiles(StaticFiles):
         elif original_path.endswith(".json"):
             response.headers["Content-Type"] = "application/json"
 
+        if path.replace("\\", "/").startswith("uploads/games/"):
+            response.headers["Access-Control-Allow-Origin"] = "*"
+
         return response
 
 
