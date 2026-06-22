@@ -65,6 +65,16 @@ app = FastAPI(title=settings.APP_NAME)
 
 Base.metadata.create_all(bind=engine)
 
+
+@app.on_event("startup")
+def seed_on_startup():
+    if not settings.AUTO_SEED_ON_STARTUP:
+        return
+
+    from app.seed import run_seed
+
+    run_seed()
+
 class UnityStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope):
         response = await super().get_response(path, scope)

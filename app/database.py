@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = ""
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080
     COOKIE_SECURE: bool = False
+    AUTO_SEED_ON_STARTUP: bool = False
 
     ADMIN_EMAIL: str = "admin@gamehub.local"
     ADMIN_PASSWORD: str = ""

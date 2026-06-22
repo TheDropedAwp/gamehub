@@ -89,11 +89,12 @@ uvicorn app.main:app --host 0.0.0.0 --port $PORT
 - `DATABASE_URL`: Render PostgreSQL internal connection string.
 - `SECRET_KEY`: long random secret.
 - `COOKIE_SECURE`: `true` on Render.
+- `AUTO_SEED_ON_STARTUP`: `true` on Render if shell access is unavailable.
 - `ADMIN_EMAIL` and `ADMIN_PASSWORD`: initial administrator credentials.
 - `MODERATOR_EMAIL` and `MODERATOR_PASSWORD`: initial moderator credentials.
 - `REDIS_URL`: optional. Leave empty on the free setup if you do not use Render Key Value.
 
-5. After the first successful deploy, run seed once from a Render shell or one-off job:
+5. On the free Render plan, keep `AUTO_SEED_ON_STARTUP=true`. The app will create or update the administrator, moderator, and categories during startup. If shell access is available, you can also run seed manually:
 
 ```powershell
 python -m app.seed
