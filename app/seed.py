@@ -33,6 +33,7 @@ def get_or_create_user(
 
     if user:
         user.username = username
+        user.hashed_password = hash_password(password)
         user.role = role
         user.is_active = True
         return user
