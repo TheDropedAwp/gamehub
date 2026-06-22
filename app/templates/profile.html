@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="profile-hero clean-profile">
+    <div class="profile-avatar-box">
+        {% if user.avatar_path %}
+            <img class="profile-avatar" src="{{ user.avatar_path }}" alt="">
+        {% else %}
+            <div class="profile-avatar placeholder-avatar">
+                {{ user.username[:1]|upper }}
+            </div>
+        {% endif %}
+    </div>
+
+    <div>
+        <div class="eyebrow">Профиль игрока</div>
+        <h1>{{ user.username }}</h1>
+
+        <form class="avatar-form" action="/profile/avatar" method="post" enctype="multipart/form-data">
+            <input type="file" name="avatar" accept=".jpg,.jpeg,.png,.webp">
+            <button class="btn mini primary" type="submit">Обновить аватар</button>
+        </form>
+    </div>
+</section>
+
+{% if user.role.value == "user" %}
+    <section class="panel">
+        <h2>Хотите публиковать свои игры?</h2>
+
+        <p>
+            Включите режим разработчика, чтобы загружать HTML5 и WebGL-проекты,
+            отправлять их на модерацию и отслеживать статистику запусков.
+        </p>
+
+        <form action="/become-developer" method="post">
+            <button class="btn primary" type="submit">Стать разработчиком</button>
+        </form>
+    </section>
+{% endif %}
+
+{% if user.role.value == "developer" or user.role.value == "admin" %}
+    <section class="panel">
+        <div class="panel-head">
+            <div>
+                <h2>Опубликованные игры</h2>
+                <p>Игры, которые доступны пользователям в каталоге.</p>
+            </div>
+
+            <a class="btn primary" href="/developer">Панель разработчика</a>
+        </div>
+
+        <div class="games-grid compact-grid">
+            {% for game in published_games %}
+                <a class="game-card" href="/games/{{ game.slug }}">
+                    <div
+                        class="game-cover"
+                        {% if game.cover_path %}
+                            style="background-image: url('{{ game.cover_path }}')"
+                        {% endif %}
+                    ></div>
+
+                    <div class="game-body">
+                        <h3>{{ game.title }}</h3>
+                        <p>Запусков: {{ game.plays_count }}</p>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+
+        {% if published_games|length == 0 %}
+            <div class="empty small">Опубликованных игр пока нет.</div>
+        {% endif %}
+    </section>
+{% endif %}
+
+<section class="panel">
+    <div class="panel-head">
+        <div>
+            <h2>История запусков</h2>
+            <p>Игры, которые вы недавно открывали.</p>
+        </div>
+    </div>
+
+    <div class="games-grid compact-grid">
+        {% for item in played_games %}
+            <a class="game-card" href="/games/{{ item.game.slug }}">
+                <div
+                    class="game-cover"
+                    {% if item.game.cover_path %}
+                        style="background-image: url('{{ item.game.cover_path }}')"
+                    {% endif %}
+                ></div>
+
+                <div class="game-body">
+                    <h3>{{ item.game.title }}</h3>
+                    <p>Запусков: {{ item.launches }}</p>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+
+    {% if played_games|length == 0 %}
+        <div class="empty small">Вы пока не запускали игры.</div>
+    {% endif %}
+</section>
+
+{% if user.role.value == "moderator" or user.role.value == "admin" %}
+    <section class="panel">
+        <h2>Модерация</h2>
+        <p>Проверка новых игр и обновлений перед публикацией.</p>
+        <a class="btn primary" href="/moderation">Перейти к модерации</a>
+    </section>
+{% endif %}
+
+{% if user.role.value == "admin" %}
+    <section class="panel">
+        <h2>Администрирование</h2>
+        <p>Управление пользователями, ролями, играми, блокировками и категориями.</p>
+        <a class="btn primary" href="/admin">Открыть админ-панель</a>
+    </section>
+{% endif %}
+
+{% endblock %}

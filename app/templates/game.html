@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="game-page-head">
+    <div>
+        <a class="back-link" href="/">← Назад в каталог</a>
+
+        <h1>{{ game.title }}</h1>
+
+        <p>{{ game.description }}</p>
+
+        <div class="game-meta">
+            {% for category in game.categories %}
+                <span>{{ category.name }}</span>
+            {% endfor %}
+
+            <span class="status {{ game.status.value }}">{{ game.status.value }}</span>
+
+            <span>Запусков: {{ game.plays_count }}</span>
+
+            <span class="rating-pill">
+                {% if reviews_count %}
+                    {% set rounded_rating = average_rating|round(0, 'common')|int %}
+                    <span class="stars" aria-label="Средняя оценка {{ '%.1f'|format(average_rating) }} из 5">
+                        {% for _ in range(rounded_rating) %}★{% endfor %}{% for _ in range(5 - rounded_rating) %}☆{% endfor %}
+                    </span>
+                    {{ "%.1f"|format(average_rating) }} · {{ reviews_count }}
+                {% else %}
+                    <span class="stars muted-stars">☆☆☆☆☆</span>
+                    Нет оценок
+                {% endif %}
+            </span>
+        </div>
+
+        <div class="tag-row">
+            {% for tag in game.tags %}
+                <span class="tag">#{{ tag.name }}</span>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="play-frame-wrap">
+    {% if game.entry_path %}
+        <iframe
+            class="play-frame"
+            src="{{ game.entry_path }}"
+            allowfullscreen
+            loading="lazy"
+            sandbox="allow-scripts allow-forms allow-pointer-lock allow-popups"
+            referrerpolicy="no-referrer"
+        ></iframe>
+    {% else %}
+        <div class="empty">У игры не найден файл запуска.</div>
+    {% endif %}
+</section>
+
+<section id="reviews" class="reviews-section">
+    <div class="section-head">
+        <div>
+            <h2>Отзывы</h2>
+            <p>
+                {% if reviews_count %}
+                    Средняя оценка {{ "%.1f"|format(average_rating) }} из 5
+                {% else %}
+                    У этой игры пока нет отзывов
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    {% if current_user %}
+        <form class="review-form" action="/games/{{ game.slug }}/reviews" method="post">
+            <div class="review-form-head">
+                <h3>{% if user_review %}Обновить отзыв{% else %}Оставить отзыв{% endif %}</h3>
+                <div class="star-input" aria-label="Оценка игры">
+                    {% for value in [5, 4, 3, 2, 1] %}
+                        <input
+                            id="rating-{{ value }}"
+                            type="radio"
+                            name="rating"
+                            value="{{ value }}"
+                            {% if user_review and user_review.rating == value %}checked{% elif not user_review and value == 5 %}checked{% endif %}
+                        >
+                        <label for="rating-{{ value }}" title="{{ value }} из 5">★</label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if review_error %}
+                <div class="alert">{{ review_error }}</div>
+            {% endif %}
+
+            <textarea
+                name="text"
+                rows="4"
+                maxlength="1200"
+                placeholder="Что понравилось, что можно улучшить?"
+                required
+            >{{ user_review.text if user_review else "" }}</textarea>
+            <button class="btn primary" type="submit">Опубликовать отзыв</button>
+        </form>
+    {% else %}
+        <div class="empty small">
+            <a href="/login">Войдите</a>, чтобы оставить отзыв и оценить игру.
+        </div>
+    {% endif %}
+
+    <div class="reviews-list">
+        {% for review in reviews %}
+            <article class="review-card">
+                <div class="review-card-head">
+                    <div>
+                        <strong>{{ review.user.username }}</strong>
+                        <span>{{ review.created_at.strftime("%d.%m.%Y") }}</span>
+                    </div>
+                    <span class="stars" aria-label="Оценка {{ review.rating }} из 5">
+                        {% for _ in range(review.rating) %}★{% endfor %}{% for _ in range(5 - review.rating) %}☆{% endfor %}
+                    </span>
+                </div>
+                <p>{{ review.text }}</p>
+            </article>
+        {% endfor %}
+    </div>
+
+    {% if reviews|length == 0 %}
+        <div class="empty small">Отзывов пока нет.</div>
+    {% endif %}
+</section>
+
+{% endblock %}

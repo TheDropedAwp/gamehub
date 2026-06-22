@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="auth-page">
+    <form class="auth-card" method="post" action="/login">
+        <h1>Вход</h1>
+        <p>Войти могут пользователи, разработчики, модераторы и администраторы.</p>
+
+        {% if error %}
+            <div class="alert">{{ error }}</div>
+        {% endif %}
+
+        <label>
+            Почта
+            <input type="email" name="email" required placeholder="user@mail.ru">
+        </label>
+
+        <label>
+            Пароль
+            <input type="password" name="password" required placeholder="Ваш пароль">
+        </label>
+
+        <button class="btn primary full" type="submit">Войти</button>
+
+        <div class="form-footer">
+            Нет аккаунта? <a href="/register">Зарегистрироваться</a>
+        </div>
+    </form>
+</section>
+
+{% endblock %}

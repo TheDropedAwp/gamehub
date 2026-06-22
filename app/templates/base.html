@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ app_name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+    <aside class="sidebar">
+        <a href="/" class="logo">
+            <span class="logo-mark">G</span>
+            <span>GameHub</span>
+        </a>
+
+        <nav class="side-nav">
+            <a href="/" class="side-link">Каталог</a>
+
+            {% if current_user %}
+                <a href="/profile" class="side-link">Профиль</a>
+
+                {% if current_user.role.value == "developer" or current_user.role.value == "admin" %}
+                    <a href="/developer" class="side-link">Панель разработчика</a>
+                {% endif %}
+
+                {% if current_user.role.value == "moderator" or current_user.role.value == "admin" %}
+                    <a href="/moderation" class="side-link">Модерация</a>
+                {% endif %}
+
+                {% if current_user.role.value == "admin" %}
+                    <a href="/admin" class="side-link">Админ-панель</a>
+                {% endif %}
+            {% endif %}
+        </nav>
+
+        <div class="sidebar-note">
+            <b>GameHub</b>
+            <span>Каталог HTML5 и WebGL-игр</span>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <form class="search" action="/" method="get">
+                <input
+                    name="q"
+                    value="{{ q if q is defined else '' }}"
+                    placeholder="Найти игру, тег или жанр"
+                >
+                <button type="submit">Поиск</button>
+            </form>
+
+            <div class="top-actions">
+                {% if current_user %}
+                    <a class="user-pill" href="/profile">
+                        {{ current_user.username }}
+                        <span>{{ current_user.role.value }}</span>
+                    </a>
+
+                    <form action="/logout" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button class="btn ghost" type="submit">Выйти</button>
+                    </form>
+                {% else %}
+                    <a class="btn ghost" href="/login">Войти</a>
+                    <a class="btn primary" href="/register">Регистрация</a>
+                {% endif %}
+            </div>
+        </header>
+
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<script>
+    document.querySelectorAll('form[method="post"]').forEach(form => {
+        if (form.querySelector('input[name="csrf_token"]')) {
+            return;
+        }
+
+        const token = document.querySelector('meta[name="csrf-token"]')?.content;
+
+        if (!token) {
+            return;
+        }
+
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "csrf_token";
+        input.value = token;
+        form.prepend(input);
+    });
+</script>
+<script src="/static/js/main.js"></script>
+</body>
+</html>

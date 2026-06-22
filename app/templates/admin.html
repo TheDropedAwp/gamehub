@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="section-head">
+    <div>
+        <h2>Админ-панель</h2>
+        <p>Управление пользователями, ролями, играми и категориями.</p>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <div>
+            <h2>Пользователи</h2>
+            <p>Поиск по нику или email.</p>
+        </div>
+
+        <form action="/admin" method="get" class="inline-form">
+            <input type="text" name="user_q" value="{{ user_q }}" placeholder="Найти пользователя">
+            <input type="hidden" name="game_q" value="{{ game_q }}">
+            <button class="btn primary" type="submit">Найти</button>
+        </form>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Пользователь</th>
+                <th>Email</th>
+                <th>Роль</th>
+                <th>Активен</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+
+                    <td>
+                        <div class="user-cell">
+                            {% if user.avatar_path %}
+                                <img class="mini-avatar" src="{{ user.avatar_path }}" alt="">
+                            {% else %}
+                                <span class="mini-avatar placeholder-avatar">{{ user.username[:1]|upper }}</span>
+                            {% endif %}
+                            {{ user.username }}
+                        </div>
+                    </td>
+
+                    <td>{{ user.email }}</td>
+
+                    <td>
+                        <form action="/admin/users/{{ user.id }}/role" method="post" class="inline-form">
+                            <select name="role">
+                                {% for role in roles %}
+                                    <option
+                                        value="{{ role.value }}"
+                                        {% if user.role.value == role.value %}selected{% endif %}
+                                    >
+                                        {{ role.value }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+
+                            <button class="btn mini primary" type="submit">Сохранить</button>
+                        </form>
+                    </td>
+
+                    <td>
+                        {% if user.is_active %}
+                            Да
+                        {% else %}
+                            Нет
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <form action="/admin/users/{{ user.id }}/toggle-active" method="post">
+                            <button class="btn mini danger" type="submit">
+                                {% if user.is_active %}
+                                    Заблокировать
+                                {% else %}
+                                    Разблокировать
+                                {% endif %}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <div>
+            <h2>Игры</h2>
+            <p>Поиск по названию и описанию игры.</p>
+        </div>
+
+        <form action="/admin" method="get" class="inline-form">
+            <input type="hidden" name="user_q" value="{{ user_q }}">
+            <input type="text" name="game_q" value="{{ game_q }}" placeholder="Найти игру">
+            <button class="btn primary" type="submit">Найти</button>
+        </form>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Игра</th>
+                <th>Разработчик</th>
+                <th>Статус</th>
+                <th>Запуски</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for game in games %}
+                <tr>
+                    <td>
+                        <a href="/games/{{ game.slug }}">{{ game.title }}</a>
+                    </td>
+
+                    <td>
+                        {% if game.developer %}
+                            {{ game.developer.username }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <span class="status {{ game.status.value }}">{{ game.status.value }}</span>
+                    </td>
+
+                    <td>{{ game.plays_count }}</td>
+
+                    <td class="actions-cell">
+                        {% if game.status.value != "blocked" %}
+                            <form action="/admin/games/{{ game.id }}/block" method="post">
+                                <input
+                                    type="hidden"
+                                    name="admin_comment"
+                                    value="Игра заблокирована администратором."
+                                >
+                                <button class="btn mini danger" type="submit">Заблокировать</button>
+                            </form>
+                        {% else %}
+                            <form action="/admin/games/{{ game.id }}/unblock" method="post">
+                                <button class="btn mini primary" type="submit">Разблокировать</button>
+                            </form>
+                        {% endif %}
+
+                        <form action="/admin/games/{{ game.id }}/delete" method="post">
+                            <button class="btn mini danger" type="submit">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <div>
+            <h2>Категории</h2>
+            <p>Категории задаются заранее администратором. Разработчик выбирает максимум две.</p>
+        </div>
+
+        <form action="/admin/categories/add" method="post" class="inline-form">
+            <input type="text" name="name" required placeholder="Новая категория">
+            <button class="btn primary" type="submit">Добавить</button>
+        </form>
+    </div>
+
+    <div class="category-admin-list">
+        {% for category in categories %}
+            <div class="category-admin-item">
+                <span>{{ category.name }}</span>
+
+                {% if category.games|length == 0 %}
+                    <form action="/admin/categories/{{ category.id }}/delete" method="post">
+                        <button class="btn mini danger" type="submit">Удалить</button>
+                    </form>
+                {% else %}
+                    <small>{{ category.games|length }} игр</small>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+{% endblock %}

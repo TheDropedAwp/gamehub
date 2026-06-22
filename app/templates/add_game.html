@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="auth-page">
+    <form class="auth-card wide" method="post" action="/games/add">
+        <h1>Добавить игру</h1>
+        <p>Игра будет отправлена на модерацию. После публикации она появится в каталоге.</p>
+
+        {% if error %}
+            <div class="alert">{{ error }}</div>
+        {% endif %}
+
+        <label>
+            Название
+            <input type="text" name="title" required placeholder="Например: Прыжок героя">
+        </label>
+
+        <label>
+            Категория
+            <input type="text" name="category" placeholder="Аркады, Гонки, Стратегии">
+        </label>
+
+        <label>
+            Обложка URL
+            <input type="url" name="cover_url" placeholder="https://...">
+        </label>
+
+        <label>
+            Ссылка на игру
+            <input type="url" name="game_url" required placeholder="https://.../index.html">
+        </label>
+
+        <label>
+            Описание
+            <textarea name="description" rows="5" placeholder="Краткое описание игры"></textarea>
+        </label>
+
+        <button class="btn primary full" type="submit">Отправить на модерацию</button>
+    </form>
+</section>
+
+{% endblock %}

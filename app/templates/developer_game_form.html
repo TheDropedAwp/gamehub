@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% set is_edit = game is defined and game %}
+{% set source = revision if revision else game %}
+
+<section class="auth-page">
+    <form
+        class="auth-card wide"
+        method="post"
+        action="{% if is_edit %}/developer/games/{{ game.id }}/edit{% else %}/developer/games/new{% endif %}"
+        enctype="multipart/form-data"
+    >
+        <h1>
+            {% if is_edit %}
+                Редактировать игру
+            {% else %}
+                Добавить игру
+            {% endif %}
+        </h1>
+
+        <p>
+            Загрузи ZIP-архив с HTML5, JavaScript, CSS или Unity WebGL билдом.
+            Внутри архива должен быть файл index.html.
+        </p>
+
+        {% if error %}
+            <div class="alert">{{ error }}</div>
+        {% endif %}
+
+        {% if game and game.status.value == "published" %}
+            <div class="notice">
+                Сейчас опубликованная версия остаётся доступной игрокам.
+                Новое обновление будет отправлено модератору как отдельная версия.
+            </div>
+        {% endif %}
+
+        <label>
+            Название игры
+            <input
+                type="text"
+                name="title"
+                required
+                value="{{ source.title if source else '' }}"
+                placeholder="Например: Space Runner"
+            >
+        </label>
+
+        <label>
+            Описание
+            <textarea name="description" rows="5" placeholder="Краткое описание игры">{{ source.description if source else '' }}</textarea>
+        </label>
+
+        <div class="form-block">
+            <b>Категории</b>
+            <p>Можно выбрать максимум две категории.</p>
+
+            <div class="check-grid">
+                {% set selected_ids = [] %}
+
+                {% if revision %}
+                    {% set selected_ids = revision.category_ids_csv.split(",") %}
+                {% elif game %}
+                    {% set selected_ids = game.categories | map(attribute="id") | map("string") | list %}
+                {% endif %}
+
+                {% for category in categories %}
+                    <label class="check-card">
+                        <input
+                            type="checkbox"
+                            name="category_ids"
+                            value="{{ category.id }}"
+                            {% if category.id|string in selected_ids %}checked{% endif %}
+                        >
+                        <span>{{ category.name }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <label>
+            Теги
+            <input
+                type="text"
+                name="tags"
+                value="{% if revision %}{{ revision.tags_text }}{% elif game %}{% for tag in game.tags %}{{ tag.name }}{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}"
+                placeholder="arcade, runner, pixel, unity"
+            >
+            <small>Максимум 15 тегов. Можно писать через запятую.</small>
+        </label>
+
+        <label>
+            Обложка игры
+            <input id="coverInput" type="file" name="cover" accept=".jpg,.jpeg,.png,.webp">
+
+            <div class="cover-preview-wrap">
+                <img
+                    id="coverPreview"
+                    class="cover-preview"
+                    src="{% if source and source.cover_path %}{{ source.cover_path }}{% endif %}"
+                    alt=""
+                    {% if not source or not source.cover_path %}style="display: none;"{% endif %}
+                >
+
+                <div
+                    id="coverPlaceholder"
+                    class="cover-placeholder"
+                    {% if source and source.cover_path %}style="display: none;"{% endif %}
+                >
+                    Превью обложки
+                </div>
+            </div>
+        </label>
+
+        <label>
+            ZIP-архив игры
+            <input type="file" name="build_zip" accept=".zip">
+
+            {% if source and source.entry_path %}
+                <small>Если не выбрать новый архив, останется текущий билд.</small>
+            {% else %}
+                <small>Для отправки на модерацию архив обязателен.</small>
+            {% endif %}
+        </label>
+
+        <div class="form-actions">
+            <button class="btn ghost full" type="submit" name="submit_action" value="draft">
+                Сохранить в черновик
+            </button>
+
+            <button class="btn primary full" type="submit" name="submit_action" value="submit">
+                Отправить на модерацию
+            </button>
+        </div>
+    </form>
+</section>
+
+<script>
+    const checks = document.querySelectorAll('input[name="category_ids"]');
+
+    checks.forEach(check => {
+        check.addEventListener("change", () => {
+            const selected = [...checks].filter(item => item.checked);
+
+            if (selected.length > 2) {
+                check.checked = false;
+                alert("Можно выбрать максимум две категории.");
+            }
+        });
+    });
+
+    const coverInput = document.getElementById("coverInput");
+    const coverPreview = document.getElementById("coverPreview");
+    const coverPlaceholder = document.getElementById("coverPlaceholder");
+
+    if (coverInput) {
+        coverInput.addEventListener("change", () => {
+            const file = coverInput.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            const url = URL.createObjectURL(file);
+
+            coverPreview.src = url;
+            coverPreview.style.display = "block";
+            coverPlaceholder.style.display = "none";
+        });
+    }
+</script>
+
+{% endblock %}

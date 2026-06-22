@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="section-head">
+    <div>
+        <h2>Панель разработчика</h2>
+        <p>Управляйте своими играми, черновиками, обновлениями и статусами модерации.</p>
+    </div>
+
+    <a class="btn primary" href="/developer/games/new">Добавить игру</a>
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <div>
+            <h2>Мои игры</h2>
+            <p>Черновики можно редактировать, а опубликованные игры обновлять через новую версию.</p>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Обложка</th>
+                <th>Название</th>
+                <th>Категории</th>
+                <th>Теги</th>
+                <th>Статус</th>
+                <th>Комментарий</th>
+                <th>Запуски</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for game in my_games %}
+                <tr>
+                    <td>
+                        {% if game.cover_path %}
+                            <img class="table-cover" src="{{ game.cover_path }}" alt="">
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>{{ game.title }}</td>
+
+                    <td>
+                        {% for category in game.categories %}
+                            <span class="mini-chip">{{ category.name }}</span>
+                        {% endfor %}
+                    </td>
+
+                    <td>
+                        {% for tag in game.tags[:5] %}
+                            <span class="tag">#{{ tag.name }}</span>
+                        {% endfor %}
+                    </td>
+
+                    <td>
+                        <span class="status {{ game.status.value }}">{{ game.status.value }}</span>
+                    </td>
+
+                    <td>
+                        {% if game.moderation_comment %}
+                            {{ game.moderation_comment }}
+                        {% elif game.admin_comment %}
+                            {{ game.admin_comment }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>{{ game.plays_count }}</td>
+
+                    <td class="actions-cell">
+                        {% if game.entry_path %}
+                            <a class="btn mini ghost" href="/games/{{ game.slug }}">Открыть</a>
+                        {% endif %}
+
+                        <a class="btn mini primary" href="/developer/games/{{ game.id }}/edit">
+                            Редактировать
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if my_games|length == 0 %}
+        <div class="empty small">Ты пока не добавлял игры.</div>
+    {% endif %}
+</section>
+
+{% endblock %}

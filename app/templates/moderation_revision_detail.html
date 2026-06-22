@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="section-head">
+    <div>
+        <h2>Проверка обновления: {{ revision.title }}</h2>
+        <p>Текущая опубликованная версия игры остаётся доступной игрокам до одобрения обновления.</p>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="game-review-grid">
+        <div>
+            {% if revision.cover_path %}
+                <img class="review-cover" src="{{ revision.cover_path }}" alt="">
+            {% endif %}
+
+            <h3>{{ revision.title }}</h3>
+
+            <p>{{ revision.description }}</p>
+
+            <div class="tag-row">
+                {% for tag in split_tags(revision.tags_text) %}
+                    <span class="tag">#{{ tag }}</span>
+                {% endfor %}
+            </div>
+
+            <p>
+                Разработчик:
+                {% if game.developer %}
+                    <b>{{ game.developer.username }}</b>
+                {% else %}
+                    —
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="moderation-actions">
+            <form action="/moderation/revisions/{{ revision.id }}/publish" method="post">
+                <button class="btn primary full" type="submit">Одобрить обновление</button>
+            </form>
+
+            <form action="/moderation/revisions/{{ revision.id }}/reject" method="post">
+                <label>
+                    Что нужно доработать
+                    <textarea
+                        name="moderation_comment"
+                        rows="5"
+                        required
+                        placeholder="Например: игра не запускается, заменить обложку, исправить описание..."
+                    ></textarea>
+                </label>
+
+                <button class="btn danger full" type="submit">Отклонить обновление</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<section class="play-frame-wrap">
+    <iframe
+        class="play-frame"
+        src="{{ revision.entry_path }}"
+        allowfullscreen
+        sandbox="allow-scripts allow-forms allow-pointer-lock allow-popups"
+        referrerpolicy="no-referrer"
+    ></iframe>
+</section>
+
+{% endblock %}

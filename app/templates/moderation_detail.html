@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="section-head">
+    <div>
+        <h2>Проверка игры: {{ game.title }}</h2>
+        <p>Модератор может запустить игру, проверить описание, обложку, категории и теги.</p>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="game-review-grid">
+        <div>
+            {% if game.cover_path %}
+                <img class="review-cover" src="{{ game.cover_path }}" alt="">
+            {% endif %}
+
+            <h3>{{ game.title }}</h3>
+
+            <p>{{ game.description }}</p>
+
+            <div class="game-meta">
+                {% for category in game.categories %}
+                    <span>{{ category.name }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="tag-row">
+                {% for tag in game.tags %}
+                    <span class="tag">#{{ tag.name }}</span>
+                {% endfor %}
+            </div>
+
+            <p>
+                Разработчик:
+                {% if game.developer %}
+                    <b>{{ game.developer.username }}</b>
+                {% else %}
+                    —
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="moderation-actions">
+            <form action="/moderation/games/{{ game.id }}/publish" method="post">
+                <button class="btn primary full" type="submit">Одобрить публикацию</button>
+            </form>
+
+            <form action="/moderation/games/{{ game.id }}/reject" method="post">
+                <label>
+                    Что нужно доработать
+                    <textarea
+                        name="moderation_comment"
+                        rows="5"
+                        required
+                        placeholder="Например: заменить обложку, исправить описание, игра не запускается..."
+                    ></textarea>
+                </label>
+
+                <button class="btn danger full" type="submit">Отклонить</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<section class="play-frame-wrap">
+    <iframe
+        class="play-frame"
+        src="{{ game.entry_path }}"
+        allowfullscreen
+        sandbox="allow-scripts allow-forms allow-pointer-lock allow-popups"
+        referrerpolicy="no-referrer"
+    ></iframe>
+</section>
+
+{% endblock %}

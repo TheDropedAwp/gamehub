@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="section-head">
+    <div>
+        <h2>Модерация</h2>
+        <p>Проверка новых игр и обновлений перед публикацией.</p>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <div>
+            <h2>Новые игры</h2>
+            <p>Игры, которые ещё ни разу не публиковались.</p>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Обложка</th>
+                <th>Игра</th>
+                <th>Разработчик</th>
+                <th>Статус</th>
+                <th></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for game in games %}
+                <tr>
+                    <td>
+                        {% if game.cover_path %}
+                            <img class="table-cover" src="{{ game.cover_path }}" alt="">
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>{{ game.title }}</td>
+
+                    <td>
+                        {% if game.developer %}
+                            {{ game.developer.username }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <span class="status {{ game.status.value }}">{{ game.status.value }}</span>
+                    </td>
+
+                    <td>
+                        <a class="btn mini primary" href="/moderation/games/{{ game.id }}">
+                            Проверить
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if games|length == 0 %}
+        <div class="empty small">Новых игр на проверке нет.</div>
+    {% endif %}
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <div>
+            <h2>Обновления игр</h2>
+            <p>Новые версии уже опубликованных игр.</p>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>Игра</th>
+                <th>Обновление</th>
+                <th>Разработчик</th>
+                <th>Статус</th>
+                <th></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for revision in revisions %}
+                <tr>
+                    <td>{{ revision.game.title }}</td>
+                    <td>{{ revision.title }}</td>
+
+                    <td>
+                        {% if revision.game.developer %}
+                            {{ revision.game.developer.username }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <span class="status {{ revision.status.value }}">{{ revision.status.value }}</span>
+                    </td>
+
+                    <td>
+                        <a class="btn mini primary" href="/moderation/revisions/{{ revision.id }}">
+                            Проверить
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if revisions|length == 0 %}
+        <div class="empty small">Обновлений на проверке нет.</div>
+    {% endif %}
+</section>
+
+{% endblock %}
